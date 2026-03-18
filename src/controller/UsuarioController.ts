@@ -29,8 +29,8 @@ class UsuarioController {
     static async novo(req: Request, res: Response): Promise<Response> {
         try {
             const dados: UsuarioDTO = req.body;
-            if (!dados.nome || !dados.email || !dados.senha) {
-                return res.status(400).json({ mensagem: "Os campos nome, email e senha são obrigatórios." });
+            if (!dados.nome || !dados.email || !dados.cpf || !dados.senha) {
+                return res.status(400).json({ mensagem: "Os campos nome, email, cpf e senha são obrigatórios." });
             }
             const sucesso = await Usuario.cadastrarUsuario(dados);
             if (sucesso) return res.status(201).json({ mensagem: "Usuário cadastrado com sucesso." });
@@ -44,8 +44,8 @@ class UsuarioController {
         try {
             const { idUsuario } = req.params;
             const dados: UsuarioDTO = req.body;
-            if (!dados.nome || !dados.email) {
-                return res.status(400).json({ mensagem: "Os campos nome e email são obrigatórios." });
+            if (!dados.nome || !dados.email || !dados.cpf) {
+                return res.status(400).json({ mensagem: "Os campos nome, email e cpf são obrigatórios." });
             }
             const sucesso = await Usuario.atualizarUsuario(Number(idUsuario), dados);
             if (sucesso) return res.status(200).json({ mensagem: "Usuário atualizado com sucesso." });
