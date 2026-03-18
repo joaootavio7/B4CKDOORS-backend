@@ -3,7 +3,7 @@
 --  Sprint 04  |  DDL + DML + Triggers
 -- ============================================================
 
--- ─── LIMPEZA (garante execução em ambiente limpo) ────────────
+-- ─── LIMPEZA ────────────────────────────────────────────────
 DROP TABLE IF EXISTS carrinho      CASCADE;
 DROP TABLE IF EXISTS favoritos     CASCADE;
 DROP TABLE IF EXISTS itens_pedido  CASCADE;
@@ -31,69 +31,70 @@ CREATE SEQUENCE seq_cod_pedido  START 1;
 -- ============================================================
 
 CREATE TABLE usuarios (
-    id         SERIAL          PRIMARY KEY,
-    nome       VARCHAR(100)    NOT NULL,
-    email      VARCHAR(150)    UNIQUE NOT NULL,
-    senha      VARCHAR(255)    NOT NULL,
-    created_at TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
+    id_usuario  SERIAL          PRIMARY KEY,
+    nome        VARCHAR(100)    NOT NULL,
+    email       VARCHAR(150)    UNIQUE NOT NULL,
+    cpf         VARCHAR(14)     UNIQUE NOT NULL,
+    senha       VARCHAR(255)    NOT NULL,
+    created_at  TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE categorias (
-    id   SERIAL       PRIMARY KEY,
-    nome VARCHAR(100) NOT NULL UNIQUE
+    id_categoria  SERIAL        PRIMARY KEY,
+    nome          VARCHAR(100)  NOT NULL UNIQUE
 );
 
 CREATE TABLE produtos (
-    id           SERIAL          PRIMARY KEY,
-    cod_produto  VARCHAR(20)     UNIQUE NOT NULL,
-    nome         VARCHAR(150)    NOT NULL,
-    descricao    TEXT,
-    preco        NUMERIC(10,2)   NOT NULL CHECK (preco >= 0),
-    estoque      INTEGER         NOT NULL CHECK (estoque >= 0),
-    imagem       TEXT,
-    categoria_id INTEGER         REFERENCES categorias(id),
-    created_at   TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
+    id_produto    SERIAL          PRIMARY KEY,
+    cod_produto   VARCHAR(20)     UNIQUE NOT NULL,
+    nome          VARCHAR(150)    NOT NULL,
+    descricao     TEXT,
+    preco         NUMERIC(10,2)   NOT NULL CHECK (preco >= 0),
+    estoque       INTEGER         NOT NULL CHECK (estoque >= 0),
+    imagem        TEXT,
+    id_categoria  INTEGER         REFERENCES categorias(id_categoria),
+    created_at    TIMESTAMP       DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE cupons (
-    id       SERIAL        PRIMARY KEY,
-    codigo   VARCHAR(20)   UNIQUE NOT NULL,
-    desconto NUMERIC(5,2)  NOT NULL CHECK (desconto > 0),
-    ativo    BOOLEAN       DEFAULT TRUE
+    id_cupom  SERIAL        PRIMARY KEY,
+    codigo    VARCHAR(20)   UNIQUE NOT NULL,
+    desconto  NUMERIC(5,2)  NOT NULL CHECK (desconto > 0),
+    ativo     BOOLEAN       DEFAULT TRUE
 );
 
 CREATE TABLE pedidos (
-    id         SERIAL        PRIMARY KEY,
-    cod_pedido VARCHAR(20)   UNIQUE NOT NULL,
-    usuario_id INTEGER       REFERENCES usuarios(id),
-    total      NUMERIC(10,2) NOT NULL CHECK (total >= 0),
-    status     VARCHAR(50)   DEFAULT 'PENDENTE',
-    created_at TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
+    id_pedido   SERIAL        PRIMARY KEY,
+    cod_pedido  VARCHAR(20)   UNIQUE NOT NULL,
+    id_usuario  INTEGER       REFERENCES usuarios(id_usuario),
+    total       NUMERIC(10,2) NOT NULL CHECK (total >= 0),
+    status      VARCHAR(50)   DEFAULT 'PENDENTE',
+    created_at  TIMESTAMP     DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE itens_pedido (
-    id             SERIAL        PRIMARY KEY,
-    pedido_id      INTEGER       REFERENCES pedidos(id) ON DELETE CASCADE,
-    produto_id     INTEGER       REFERENCES produtos(id),
-    quantidade     INTEGER       NOT NULL CHECK (quantidade > 0),
-    preco_unitario NUMERIC(10,2) NOT NULL CHECK (preco_unitario >= 0)
+    id_item         SERIAL        PRIMARY KEY,
+    id_pedido       INTEGER       REFERENCES pedidos(id_pedido)  ON DELETE CASCADE,
+    id_produto      INTEGER       REFERENCES produtos(id_produto),
+    quantidade      INTEGER       NOT NULL CHECK (quantidade > 0),
+    preco_unitario  NUMERIC(10,2) NOT NULL CHECK (preco_unitario >= 0)
 );
 
 CREATE TABLE favoritos (
-    id         SERIAL  PRIMARY KEY,
-    usuario_id INTEGER REFERENCES usuarios(id)  ON DELETE CASCADE,
-    produto_id INTEGER REFERENCES produtos(id)  ON DELETE CASCADE
+    id_favorito  SERIAL  PRIMARY KEY,
+    id_usuario   INTEGER REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    id_produto   INTEGER REFERENCES produtos(id_produto) ON DELETE CASCADE
 );
 
 CREATE TABLE carrinho (
-    id         SERIAL  PRIMARY KEY,
-    usuario_id INTEGER REFERENCES usuarios(id)  ON DELETE CASCADE,
-    produto_id INTEGER REFERENCES produtos(id)  ON DELETE CASCADE,
-    quantidade INTEGER NOT NULL CHECK (quantidade > 0)
+    id_carrinho  SERIAL  PRIMARY KEY,
+    id_usuario   INTEGER REFERENCES usuarios(id_usuario) ON DELETE CASCADE,
+    id_produto   INTEGER REFERENCES produtos(id_produto) ON DELETE CASCADE,
+    quantidade   INTEGER NOT NULL CHECK (quantidade > 0)
 );
 
 -- ============================================================
---  TRIGGERS — geração automática dos códigos alfanuméricos
+--  TRIGGERS
 -- ============================================================
 
 CREATE OR REPLACE FUNCTION gerar_cod_produto()
@@ -128,17 +129,17 @@ CREATE TRIGGER trigger_cod_pedido
 -- ============================================================
 
 -- USUARIOS
-INSERT INTO usuarios (nome, email, senha) VALUES
-('João Silva',       'joao.silva@email.com',       'hash_123456'),
-('Maria Oliveira',   'maria.oliveira@email.com',   'hash_123456'),
-('Pedro Santos',     'pedro.santos@email.com',     'hash_123456'),
-('Lucas Almeida',    'lucas.almeida@email.com',    'hash_123456'),
-('Ana Costa',        'ana.costa@email.com',         'hash_123456'),
-('Fernanda Lima',    'fernanda.lima@email.com',    'hash_123456'),
-('Rafael Souza',     'rafael.souza@email.com',     'hash_123456'),
-('Camila Rocha',     'camila.rocha@email.com',     'hash_123456'),
-('Bruno Martins',    'bruno.martins@email.com',    'hash_123456'),
-('Juliana Ferreira', 'juliana.ferreira@email.com', 'hash_123456');
+INSERT INTO usuarios (nome, email, cpf, senha) VALUES
+('João Silva',       'joao.silva@email.com',       '111.111.111-11', 'hash_123456'),
+('Maria Oliveira',   'maria.oliveira@email.com',   '222.222.222-22', 'hash_123456'),
+('Pedro Santos',     'pedro.santos@email.com',     '333.333.333-33', 'hash_123456'),
+('Lucas Almeida',    'lucas.almeida@email.com',    '444.444.444-44', 'hash_123456'),
+('Ana Costa',        'ana.costa@email.com',         '555.555.555-55', 'hash_123456'),
+('Fernanda Lima',    'fernanda.lima@email.com',    '666.666.666-66', 'hash_123456'),
+('Rafael Souza',     'rafael.souza@email.com',     '777.777.777-77', 'hash_123456'),
+('Camila Rocha',     'camila.rocha@email.com',     '888.888.888-88', 'hash_123456'),
+('Bruno Martins',    'bruno.martins@email.com',    '999.999.999-99', 'hash_123456'),
+('Juliana Ferreira', 'juliana.ferreira@email.com', '000.000.000-00', 'hash_123456');
 
 -- CATEGORIAS
 INSERT INTO categorias (nome) VALUES
@@ -153,8 +154,8 @@ INSERT INTO categorias (nome) VALUES
 ('Suplementos'),
 ('Promoções');
 
--- PRODUTOS (cod_produto gerado automaticamente pelo trigger)
-INSERT INTO produtos (nome, descricao, preco, estoque, categoria_id) VALUES
+-- PRODUTOS
+INSERT INTO produtos (nome, descricao, preco, estoque, id_categoria) VALUES
 ('Camisa São Paulo 24/25',   'Camisa oficial temporada 24/25',        199.90,  50, 1),
 ('Camisa Palmeiras 96/97',   'Modelo retrô temporada 96/97',          219.90,  30, 1),
 ('Camisa Corinthians 19/20', 'Camisa oficial 19/20',                  189.90,  40, 1),
@@ -181,8 +182,8 @@ INSERT INTO cupons (codigo, desconto, ativo) VALUES
 ('VIP18',      18.00, FALSE),
 ('SUPER50',    50.00, FALSE);
 
--- PEDIDOS (cod_pedido gerado automaticamente pelo trigger)
-INSERT INTO pedidos (usuario_id, total, status, created_at) VALUES
+-- PEDIDOS
+INSERT INTO pedidos (id_usuario, total, status, created_at) VALUES
 (1,  199.90, 'PAGO',      '2025-06-01 09:10:00'),
 (2,  349.90, 'PENDENTE',  '2025-06-05 14:30:00'),
 (3,  479.90, 'PAGO',      '2025-06-08 11:00:00'),
@@ -195,7 +196,7 @@ INSERT INTO pedidos (usuario_id, total, status, created_at) VALUES
 (10,  79.90, 'PAGO',      '2025-06-22 12:00:00');
 
 -- ITENS DE PEDIDO
-INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) VALUES
+INSERT INTO itens_pedido (id_pedido, id_produto, quantidade, preco_unitario) VALUES
 (1,  1, 1, 199.90),
 (2,  7, 1, 349.90),
 (3,  5, 1, 479.90),
@@ -208,27 +209,11 @@ INSERT INTO itens_pedido (pedido_id, produto_id, quantidade, preco_unitario) VAL
 (10, 10, 1,  79.90);
 
 -- FAVORITOS
-INSERT INTO favoritos (usuario_id, produto_id) VALUES
-(1, 4),
-(1, 6),
-(2, 1),
-(3, 5),
-(4, 7),
-(5, 2),
-(6, 9),
-(7, 3),
-(8, 10),
-(9, 8);
+INSERT INTO favoritos (id_usuario, id_produto) VALUES
+(1, 4), (1, 6), (2, 1), (3, 5), (4, 7),
+(5, 2), (6, 9), (7, 3), (8, 10), (9, 8);
 
 -- CARRINHO
-INSERT INTO carrinho (usuario_id, produto_id, quantidade) VALUES
-(1,  6, 1),
-(2,  4, 1),
-(3, 11, 2),
-(4,  1, 1),
-(5,  7, 1),
-(6,  2, 1),
-(7, 12, 3),
-(8,  5, 1),
-(9,  9, 2),
-(10, 3, 1);
+INSERT INTO carrinho (id_usuario, id_produto, quantidade) VALUES
+(1,  6, 1), (2,  4, 1), (3, 11, 2), (4,  1, 1), (5,  7, 1),
+(6,  2, 1), (7, 12, 3), (8,  5, 1), (9,  9, 2), (10, 3, 1);
