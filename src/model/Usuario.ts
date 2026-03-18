@@ -9,14 +9,14 @@ export class Usuario {
     static async listarUsuarios(): Promise<UsuarioDTO[] | null> {
         try {
             const resposta = await database.query(`
-                SELECT id, nome, email, created_at
-                FROM usuarios
-                ORDER BY nome ASC
+                SELECT id_usuario, nome, email, cpf, created_at
+                FROM usuarios ORDER BY nome ASC
             `);
             return resposta.rows.map((row) => ({
-                idUsuario: row.id,
+                idUsuario: row.id_usuario,
                 nome:      row.nome,
                 email:     row.email,
+                cpf:       row.cpf,
                 senha:     "",
             }));
         } catch (error) {
@@ -28,12 +28,11 @@ export class Usuario {
     static async buscarUsuario(id: number): Promise<UsuarioDTO | null> {
         try {
             const resposta = await database.query(
-                `SELECT id, nome, email, created_at FROM usuarios WHERE id = $1`,
-                [id]
+                `SELECT id_usuario, nome, email, cpf FROM usuarios WHERE id_usuario = $1`, [id]
             );
             if (resposta.rows.length === 0) return null;
             const row = resposta.rows[0];
-            return { idUsuario: row.id, nome: row.nome, email: row.email, senha: "" };
+            return { idUsuario: row.id_usuario, nome: row.nome, email: row.email, cpf: row.cpf, senha: "" };
         } catch (error) {
             console.error("[Usuario] Erro ao buscar:", error);
             return null;
@@ -43,8 +42,8 @@ export class Usuario {
     static async cadastrarUsuario(usuario: UsuarioDTO): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `INSERT INTO usuarios (nome, email, senha) VALUES ($1, $2, $3) RETURNING id`,
-                [usuario.nome, usuario.email, usuario.senha]
+                `INSERT INTO usuarios (nome, email, cpf, senha) VALUES ($1, $2, $3, $4) RETURNING id_usuario`,
+                [usuario.nome, usuario.email, usuario.cpf, usuario.senha]
             );
             return resposta.rows.length > 0;
         } catch (error) {
@@ -56,8 +55,8 @@ export class Usuario {
     static async atualizarUsuario(id: number, usuario: UsuarioDTO): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `UPDATE usuarios SET nome = $1, email = $2 WHERE id = $3 RETURNING id`,
-                [usuario.nome, usuario.email, id]
+                `UPDATE usuarios SET nome = $1, email = $2, cpf = $3 WHERE id_usuario = $4 RETURNING id_usuario`,
+                [usuario.nome, usuario.email, usuario.cpf, id]
             );
             return resposta.rows.length > 0;
         } catch (error) {
@@ -69,8 +68,7 @@ export class Usuario {
     static async removerUsuario(id: number): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `DELETE FROM usuarios WHERE id = $1 RETURNING id`,
-                [id]
+                `DELETE FROM usuarios WHERE id_usuario = $1 RETURNING id_usuario`, [id]
             );
             return resposta.rows.length > 0;
         } catch (error) {

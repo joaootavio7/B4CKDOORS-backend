@@ -9,14 +9,13 @@ export class Pedido {
     static async listarPedidos(): Promise<PedidoDTO[] | null> {
         try {
             const resposta = await database.query(`
-                SELECT id, cod_pedido, usuario_id, total, status, created_at
-                FROM pedidos
-                ORDER BY created_at DESC
+                SELECT id_pedido, cod_pedido, id_usuario, total, status, created_at
+                FROM pedidos ORDER BY created_at DESC
             `);
             return resposta.rows.map((row) => ({
-                idPedido:   row.id,
+                idPedido:   row.id_pedido,
                 codPedido:  row.cod_pedido,
-                idUsuario:  row.usuario_id,
+                idUsuario:  row.id_usuario,
                 valorTotal: Number(row.total),
                 status:     row.status,
                 dataPedido: row.created_at,
@@ -30,13 +29,13 @@ export class Pedido {
     static async buscarPedido(id: number): Promise<PedidoDTO | null> {
         try {
             const resposta = await database.query(
-                `SELECT id, cod_pedido, usuario_id, total, status, created_at FROM pedidos WHERE id = $1`,
-                [id]
+                `SELECT id_pedido, cod_pedido, id_usuario, total, status, created_at
+                 FROM pedidos WHERE id_pedido = $1`, [id]
             );
             if (resposta.rows.length === 0) return null;
             const row = resposta.rows[0];
             return {
-                idPedido: row.id, codPedido: row.cod_pedido, idUsuario: row.usuario_id,
+                idPedido: row.id_pedido, codPedido: row.cod_pedido, idUsuario: row.id_usuario,
                 valorTotal: Number(row.total), status: row.status, dataPedido: row.created_at,
             };
         } catch (error) {
@@ -48,7 +47,7 @@ export class Pedido {
     static async cadastrarPedido(pedido: PedidoDTO): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `INSERT INTO pedidos (usuario_id, total, status) VALUES ($1, $2, $3) RETURNING id`,
+                `INSERT INTO pedidos (id_usuario, total, status) VALUES ($1, $2, $3) RETURNING id_pedido`,
                 [pedido.idUsuario, pedido.valorTotal, pedido.status ?? "PENDENTE"]
             );
             return resposta.rows.length > 0;
@@ -61,7 +60,7 @@ export class Pedido {
     static async atualizarPedido(id: number, pedido: PedidoDTO): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `UPDATE pedidos SET total = $1, status = $2 WHERE id = $3 RETURNING id`,
+                `UPDATE pedidos SET total = $1, status = $2 WHERE id_pedido = $3 RETURNING id_pedido`,
                 [pedido.valorTotal, pedido.status, id]
             );
             return resposta.rows.length > 0;
@@ -74,7 +73,7 @@ export class Pedido {
     static async removerPedido(id: number): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `DELETE FROM pedidos WHERE id = $1 RETURNING id`, [id]
+                `DELETE FROM pedidos WHERE id_pedido = $1 RETURNING id_pedido`, [id]
             );
             return resposta.rows.length > 0;
         } catch (error) {

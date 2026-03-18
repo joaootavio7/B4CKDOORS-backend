@@ -8,10 +8,10 @@ export class Categoria {
 
     static async listarCategorias(): Promise<CategoriaDTO[] | null> {
         try {
-            const resposta = await database.query(`
-                SELECT id, nome FROM categorias ORDER BY nome ASC
-            `);
-            return resposta.rows.map((row) => ({ idCategoria: row.id, nome: row.nome }));
+            const resposta = await database.query(
+                `SELECT id_categoria, nome FROM categorias ORDER BY nome ASC`
+            );
+            return resposta.rows.map((row) => ({ idCategoria: row.id_categoria, nome: row.nome }));
         } catch (error) {
             console.error("[Categoria] Erro ao listar:", error);
             return null;
@@ -21,10 +21,10 @@ export class Categoria {
     static async buscarCategoria(id: number): Promise<CategoriaDTO | null> {
         try {
             const resposta = await database.query(
-                `SELECT id, nome FROM categorias WHERE id = $1`, [id]
+                `SELECT id_categoria, nome FROM categorias WHERE id_categoria = $1`, [id]
             );
             if (resposta.rows.length === 0) return null;
-            return { idCategoria: resposta.rows[0].id, nome: resposta.rows[0].nome };
+            return { idCategoria: resposta.rows[0].id_categoria, nome: resposta.rows[0].nome };
         } catch (error) {
             console.error("[Categoria] Erro ao buscar:", error);
             return null;
@@ -34,8 +34,7 @@ export class Categoria {
     static async cadastrarCategoria(categoria: CategoriaDTO): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `INSERT INTO categorias (nome) VALUES ($1) RETURNING id`,
-                [categoria.nome]
+                `INSERT INTO categorias (nome) VALUES ($1) RETURNING id_categoria`, [categoria.nome]
             );
             return resposta.rows.length > 0;
         } catch (error) {
@@ -47,7 +46,7 @@ export class Categoria {
     static async atualizarCategoria(id: number, categoria: CategoriaDTO): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `UPDATE categorias SET nome = $1 WHERE id = $2 RETURNING id`,
+                `UPDATE categorias SET nome = $1 WHERE id_categoria = $2 RETURNING id_categoria`,
                 [categoria.nome, id]
             );
             return resposta.rows.length > 0;
@@ -60,7 +59,7 @@ export class Categoria {
     static async removerCategoria(id: number): Promise<boolean> {
         try {
             const resposta = await database.query(
-                `DELETE FROM categorias WHERE id = $1 RETURNING id`, [id]
+                `DELETE FROM categorias WHERE id_categoria = $1 RETURNING id_categoria`, [id]
             );
             return resposta.rows.length > 0;
         } catch (error) {
